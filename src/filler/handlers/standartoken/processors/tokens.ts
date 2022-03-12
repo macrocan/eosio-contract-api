@@ -16,11 +16,6 @@ export function tokenProcessor(core: StandarTokenHandler, processor: DataProcess
     destructors.push(processor.onContractRow(
         contract, 'accounts',
         async (db: ContractDBTransaction, block: ShipBlock, delta: EosioContractRow<BalancesTableRow>): Promise<void> => {
-            await db.delete('standartoken_balances', {
-                str: 'contract = $1 AND owner = $2',
-                values: [contract, delta.scope]
-            });
-
             // balance maybe not valid asset
             var token = null
             try {
@@ -30,8 +25,13 @@ export function tokenProcessor(core: StandarTokenHandler, processor: DataProcess
             }
 
             if (token && delta.present) {
+                await db.delete('standartoken_balances', {
+                    str: 'contract = $1 AND owner = $2',
+                    values: [delta.code, delta.scope]
+                });
+                
                 await db.insert('standartoken_balances', {
-                    contract: contract,
+                    contract: delta.code,
                     owner: delta.scope,
                     token_symbol: token.token_symbol,
                     amount: token.amount,
@@ -44,7 +44,7 @@ export function tokenProcessor(core: StandarTokenHandler, processor: DataProcess
     // log stat table delta
     destructors.push(processor.onContractRow(
         contract, 'stat',
-        async (db: ContractDBTransaction, block: ShipBlock, delta: EosioContractRow<TokenStatTableRow>): Promise<void> => {
+        async (db: ContractDBTransaction, block: ShipBlock, delta: EosioContractRow<TokenStatTableRow>): Promise<void> => {            
             // max_supply maybe not valid asset
             var max_supply = null
             try {
@@ -62,15 +62,20 @@ export function tokenProcessor(core: StandarTokenHandler, processor: DataProcess
             }
 
             if (max_supply && delta.present) {
+                await db.delete('standartoken_balances', {
+                    str: 'contract = $1 AND token_symbol = $2',
+                    values: [delta.code, max_supply.token_symbol]
+                });
+
                 await db.insert('standartoken_stats', {
-                    contract: contract,
+                    contract: delta.code,
                     token_symbol: max_supply.token_symbol,
                     token_precision: max_supply.token_precision,
                     supply: supply,
                     max_supply: max_supply.amount,
                     issuer: delta.value.issuer,
-                    created_at_block: block.block_num,
-                    created_at_time: eosioTimestampToDate(block.timestamp).getTime(),
+                    updated_at_block: block.block_num,
+                    updated_at_time: eosioTimestampToDate(block.timestamp).getTime(),
                 }, ['contract', 'token_symbol']);
             }
         }, StandarTokenUpdatePriority.TABLE_STATS.valueOf()
@@ -91,7 +96,7 @@ export function tokenProcessor(core: StandarTokenHandler, processor: DataProcess
 
                 if (token) {
                     await db.insert('standartoken_transfers', {
-                        contract: contract,
+                        contract: trace.act.account,
                         transfer_id: trace.global_sequence,
                         from: trace.act.data.from,
                         to: trace.act.data.to,
@@ -122,7 +127,7 @@ export function tokenProcessor(core: StandarTokenHandler, processor: DataProcess
 
                 if (token) {
                     await db.insert('standartoken_transfers', {
-                        contract: contract,
+                        contract: trace.act.account,
                         transfer_id: trace.global_sequence,
                         token_symbol: token.token_symbol,
                         amount: token.amount,
