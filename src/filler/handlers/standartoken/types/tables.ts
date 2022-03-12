@@ -2,9 +2,8 @@ export type BalancesTableRow = {
     balance: string
 };
 
-export type LogTransferActionData = {
-    'from': string,
-    to: string,
-    quantity: string,
-    memo: string
+export type TokenStatTableRow = {
+    supply: string
+    max_supply: string
+    issuer: string
 };

@@ -13,7 +13,9 @@ export const STANDARTOKEN_BASE_PRIORITY = 0;
 
 export enum StandarTokenUpdatePriority {
     TABLE_BALANCES = STANDARTOKEN_BASE_PRIORITY + 10,
+    TABLE_STATS = STANDARTOKEN_BASE_PRIORITY + 10,
     TABLE_TRANSFER_TX = STANDARTOKEN_BASE_PRIORITY + 10,
+    TABLE_TETIRE_TX = STANDARTOKEN_BASE_PRIORITY + 10,
 }
 
 export type StandarTokenReaderArgs = {
@@ -67,8 +69,18 @@ export default class StandarTokenHandler extends ContractHandler {
 
     }
 
-    async deleteDB(transaction: PoolClient): Promise<void> {
+    async deleteDB(client: PoolClient): Promise<void> {
+        const tables = [
+            'standartoken_balances', 'standartoken_stats', 'standartoken_transfers',
+            'standartoken_retired'
+        ];
 
+        for (const table of tables) {
+            await client.query(
+                'DELETE FROM ' + client.escapeIdentifier(table) + ' WHERE contract = $1',
+                [this.args.standartoken_account]
+            );
+        }
     }
 
     async register(processor: DataProcessor, notifier: ApiNotificationSender): Promise<() => any> {
