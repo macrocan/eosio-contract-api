@@ -29,7 +29,7 @@ export function tokenProcessor(core: StandarTokenHandler, processor: DataProcess
                     str: 'contract = $1 AND owner = $2',
                     values: [delta.code, delta.scope]
                 });
-                
+
                 await db.insert('standartoken_balances', {
                     contract: delta.code,
                     owner: delta.scope,
@@ -62,7 +62,7 @@ export function tokenProcessor(core: StandarTokenHandler, processor: DataProcess
             }
 
             if (max_supply && delta.present) {
-                await db.delete('standartoken_balances', {
+                await db.delete('standartoken_stats', {
                     str: 'contract = $1 AND token_symbol = $2',
                     values: [delta.code, max_supply.token_symbol]
                 });
