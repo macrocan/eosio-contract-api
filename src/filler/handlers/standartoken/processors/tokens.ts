@@ -126,7 +126,7 @@ export function tokenProcessor(core: StandarTokenHandler, processor: DataProcess
                 }
 
                 if (token) {
-                    await db.insert('standartoken_transfers', {
+                    await db.insert('standartoken_retired', {
                         contract: trace.act.account,
                         transfer_id: trace.global_sequence,
                         token_symbol: token.token_symbol,
