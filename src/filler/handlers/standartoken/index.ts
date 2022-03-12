@@ -7,7 +7,7 @@ import logger from '../../../utils/winston';
 
 
 import { ContractHandler } from '../interfaces';
-import { balanceProcessor } from './processors/balances';
+import { tokenProcessor } from './processors/tokens';
 
 export const STANDARTOKEN_BASE_PRIORITY = 0;
 
@@ -74,7 +74,7 @@ export default class StandarTokenHandler extends ContractHandler {
     async register(processor: DataProcessor, notifier: ApiNotificationSender): Promise<() => any> {
         const destructors: Array<() => any> = [];
 
-        destructors.push(balanceProcessor(this, processor));
+        destructors.push(tokenProcessor(this, processor));
         return (): any => destructors.map(fn => fn());
     }
 }
