@@ -15,8 +15,8 @@ CREATE TABLE standartoken_stats (
     token_precision integer NOT NULL,
     supply bigint NOT NULL,
     max_supply bigint NOT NULL,
-    created_at_block bigint NOT NULL,
-    created_at_time bigint NOT NULL,
+    updated_at_block bigint NOT NULL,
+    updated_at_time bigint NOT NULL,
     issuer character varying(12) NOT NULL,
     CONSTRAINT standartoken_stats_pkey PRIMARY KEY (contract, token_symbol)
 );
