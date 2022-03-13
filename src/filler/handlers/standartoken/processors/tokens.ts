@@ -3,7 +3,7 @@ import DataProcessor from '../../../processor';
 import { ContractDBTransaction } from '../../../database';
 import { EosioContractRow } from '../../../../types/eosio';
 import { ShipBlock } from '../../../../types/ship';
-import { eosioTimestampToDate, splitEosioToken } from '../../../../utils/eosio';
+import { eosioTimestampToDate, splitEosioToken, splitEosioAsset } from '../../../../utils/eosio';
 import { BalancesTableRow, TokenStatTableRow } from '../types/tables';
 import { LogTransferActionData, LogRetireActionData } from '../types/actions'
 import { EosioActionTrace, EosioTransaction } from '../../../../types/eosio';
@@ -19,7 +19,7 @@ export function tokenProcessor(core: StandarTokenHandler, processor: DataProcess
             // balance maybe not valid asset
             var token = null
             try {
-                token = splitEosioToken(delta.value.balance);
+                token = splitEosioAsset(delta.value.balance);
             } catch (error) {
                 logger.warn("contract " + delta.code + " is not standar token contract")
             }
@@ -48,20 +48,23 @@ export function tokenProcessor(core: StandarTokenHandler, processor: DataProcess
             // max_supply maybe not valid asset
             var max_supply = null
             try {
-                max_supply = splitEosioToken(delta.value.max_supply);
+                max_supply = splitEosioAsset(delta.value.max_supply);
             } catch (error) {
                 logger.warn("contract " + delta.code + " is not standar token contract")
             }
 
             // supply may be 0 when create
-            var supply = '0'
+            var supply = null
             try {
-                supply = splitEosioToken(delta.value.max_supply).amount;
+                supply = splitEosioAsset(delta.value.supply);
             } catch (error) {
                 logger.warn("contract " + delta.code + " is not standar token contract")
             }
 
-            if (max_supply && delta.present) {
+            if (max_supply && supply && delta.present) {
+                logger.warn("origin max supply=" + delta.value.max_supply + ", supply=" + delta.value.supply)
+                logger.warn("max supply=" + max_supply.amount + ", supply=" + supply.amount)
+
                 await db.delete('standartoken_stats', {
                     str: 'contract = $1 AND token_symbol = $2',
                     values: [delta.code, max_supply.token_symbol]
@@ -71,7 +74,7 @@ export function tokenProcessor(core: StandarTokenHandler, processor: DataProcess
                     contract: delta.code,
                     token_symbol: max_supply.token_symbol,
                     token_precision: max_supply.token_precision,
-                    supply: supply,
+                    supply: supply.amount,
                     max_supply: max_supply.amount,
                     issuer: delta.value.issuer,
                     updated_at_block: block.block_num,
@@ -89,7 +92,7 @@ export function tokenProcessor(core: StandarTokenHandler, processor: DataProcess
                 // balance maybe not valid asset
                 var token = null
                 try {
-                    token = splitEosioToken(trace.act.data.quantity);
+                    token = splitEosioAsset(trace.act.data.quantity);
                 } catch (error) {
                     logger.warn("contract " + trace.act.account + " is not standar token contract")
                 }
@@ -120,7 +123,7 @@ export function tokenProcessor(core: StandarTokenHandler, processor: DataProcess
                 // balance maybe not valid asset
                 var token = null
                 try {
-                    token = splitEosioToken(trace.act.data.quantity);
+                    token = splitEosioAsset(trace.act.data.quantity);
                 } catch (error) {
                     logger.warn("contract " + trace.act.account + " is not standar token contract")
                 }

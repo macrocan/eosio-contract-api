@@ -1,5 +1,5 @@
 import { TextDecoder, TextEncoder } from 'text-encoding';
-import { SerialBuffer } from 'eosjs/dist/eosjs-serialize';
+import { SerialBuffer, stringToSymbol } from 'eosjs/dist/eosjs-serialize';
 
 import { deserializeUInt, serializeUInt } from './binary';
 import { Serialize } from 'eosjs';
@@ -38,6 +38,17 @@ export function deserializeEosioName(data: string): string {
 
 export function eosioTimestampToDate(timestamp: string): Date {
     return new Date(timestamp + '+0000');
+}
+
+export function splitEosioAsset(asset: string): {amount: string, token_symbol: string, token_precision: number} {
+    const split1 = asset.split(' ');
+    const split2 = split1[0].split('.');
+    
+    return {
+        amount: split1[0],
+        token_symbol: split1[1],
+        token_precision: split2[1] ? split2[1].length : 0
+    };
 }
 
 export function splitEosioToken(asset: string, contract?: string): {amount: string, token_symbol: string, token_precision: number, token_contract?: string} {

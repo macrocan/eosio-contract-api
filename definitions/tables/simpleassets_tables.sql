@@ -24,6 +24,8 @@ CREATE TABLE simpleassets_authors (
     dappinfo jsonb,
     fieldtypes jsonb,
     priorityimg jsonb,
+    created_at_block bigint NOT NULL,
+    created_at_time bigint NOT NULL,
     CONSTRAINT simpleassets_collections_pkey PRIMARY KEY (contract, author)
 );
 
