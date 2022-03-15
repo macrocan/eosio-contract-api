@@ -62,9 +62,6 @@ export function tokenProcessor(core: StandarTokenHandler, processor: DataProcess
             }
 
             if (max_supply && supply && delta.present) {
-                logger.warn("origin max supply=" + delta.value.max_supply + ", supply=" + delta.value.supply)
-                logger.warn("max supply=" + max_supply.amount + ", supply=" + supply.amount)
-
                 await db.delete('standartoken_stats', {
                     str: 'contract = $1 AND token_symbol = $2',
                     values: [delta.code, max_supply.token_symbol]
