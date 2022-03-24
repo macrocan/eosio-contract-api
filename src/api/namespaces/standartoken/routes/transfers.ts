@@ -18,12 +18,6 @@ export class TransferApi {
 
     getTransfersAction = async (params: RequestValues, ctx: StandarTokenContext): Promise<any> => {
         const result = await getRawTransfersAction(params, ctx);
-
-        return await fillTransfers(
-            this.server, this.core.args.standartoken_account,
-            result.rows.map(this.transferFormatter),
-            this.assetFormatter, this.assetView, this.fillerHook
-        );
     }
 
     endpoints(router: express.Router): any {
