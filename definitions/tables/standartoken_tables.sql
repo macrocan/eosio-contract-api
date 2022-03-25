@@ -46,3 +46,16 @@ CREATE TABLE standartoken_retired (
     created_at_time bigint NOT NULL,
     CONSTRAINT standartoken_retired_pkey PRIMARY KEY (contract, transfer_id)
 );
+
+-- INDEXES --
+CREATE INDEX standartoken_balances_owner ON standartoken_balances USING btree (owner);
+
+CREATE INDEX standartoken_transfers_contract_token_symbol ON standartoken_transfers USING btree (contract, token_symbol);
+CREATE INDEX standartoken_transfers_from ON standartoken_transfers USING btree ("from");
+CREATE INDEX standartoken_transfers_to ON standartoken_transfers USING btree ("to");
+CREATE INDEX standartoken_transfers_created_at_block ON standartoken_transfers USING btree (created_at_block);
+CREATE INDEX standartoken_transfers_created_at_time ON standartoken_transfers USING btree (created_at_time);
+
+CREATE INDEX standartoken_retired_contract_token_symbol ON standartoken_retired USING btree (contract, token_symbol);
+CREATE INDEX standartoken_retired_created_at_block ON standartoken_retired USING btree (created_at_block);
+CREATE INDEX standartoken_retired_created_at_time ON standartoken_retired USING btree (created_at_time);
