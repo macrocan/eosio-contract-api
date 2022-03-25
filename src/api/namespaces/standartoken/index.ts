@@ -4,12 +4,17 @@ import { HTTPServer } from '../../server';
 import { ApiNamespace } from '../interfaces';
 import { ActionHandlerContext } from '../../actionhandler';
 import ApiNotificationReceiver from '../../notification';
+import { transfersEndpoints } from './routes/transfers';
+// import logger from '../../../utils/winston';
+import { ILimits } from "../../../types/config";
+
 
 
 export type StandarTokenNamespaceArgs = {
     connected_reader: string;
 
     standartoken_account: string;
+    limits: ILimits
 }
 
 export type StandarTokenContext = ActionHandlerContext<StandarTokenNamespaceArgs>;
@@ -34,12 +39,15 @@ export class StandarTokenNamespace extends ApiNamespace {
             server.web.express.use(this.path, server.web.limiter);
         }
 
+        const endpointsDocs: any[] = [];
+
+        endpointsDocs.push(transfersEndpoints(this, server, router));
+
+
         return router
     }
 
     async socket(server: HTTPServer): Promise<void> {
         const notification = new ApiNotificationReceiver(this.connection, this.args.connected_reader);
-
-        
     }
 }

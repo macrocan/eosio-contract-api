@@ -1,38 +1,85 @@
 import * as express from 'express';
 
-import { StandarTokenContext, StandarTokenNamespace } from '../index';
-import { getRawTransfersAction } from "../handlers/transfers"
-
+import { StandarTokenNamespace } from '../index';
 import { HTTPServer } from '../../../server';
-import { RequestValues } from '../../utils';
+import {
+    // actionGreylistParameters,
+    dateBoundaryParameters,
+    getOpenAPI3Responses,
+    paginationParameters,
+    primaryBoundaryParameters
+} from '../../../docs';
+import {
+    getTransfersAction,
+} from '../handlers/transfers';
 
-import ApiNotificationReceiver from '../../../notification';
 
+export function transfersEndpoints(core: StandarTokenNamespace, server: HTTPServer, router: express.Router): any {
+    const {caching, returnAsJSON} = server.web;
 
-export class TransferApi {
-    constructor(
-        readonly core: StandarTokenNamespace,
-        readonly server: HTTPServer,
-        readonly schema: string
-    ) { }
+    router.all('/v1/transfers', caching(), returnAsJSON(getTransfersAction, core));
 
-    getTransfersAction = async (params: RequestValues, ctx: StandarTokenContext): Promise<any> => {
-        const result = await getRawTransfersAction(params, ctx);
-
-        return await fillTransfers(
-            this.server, this.core.args.standartoken_account,
-            result.rows.map(this.transferFormatter),
-            this.assetFormatter, this.assetView, this.fillerHook
-        );
-    }
-
-    endpoints(router: express.Router): any {
-        const {caching, returnAsJSON} = this.server.web;
-
-        router.all('/v1/transfers', caching(), returnAsJSON(this.getTransfersAction, this.core));
-    }
-
-    sockets(notification: ApiNotificationReceiver): void {
-        // TODO
-    }
+    return {
+        tag: {
+            name: 'transfers',
+            description: 'Transfers'
+        },
+        paths: {
+            '/v1/transfers': {
+                get: {
+                    tags: ['transfers'],
+                    summary: 'Fetch transfers',
+                    parameters: [
+                        {
+                            name: 'senders',
+                            in: 'query',
+                            description: 'Get transfers by from',
+                            required: false,
+                            schema: { type: 'string' }
+                        },
+                        {
+                            name: 'receivers',
+                            in: 'query',
+                            description: 'Get transfers by to',
+                            required: false,
+                            schema: { type: 'string' }
+                        },
+                        {
+                            name: 'block_height_min',
+                            in: 'query',
+                            description: 'Filter for transfers which the block_height >= block_height_min',
+                            required: false,
+                            schema: {type: 'string'}
+                        },
+                        {
+                            name: 'block_height_max',
+                            in: 'query',
+                            description: 'Filter for transfers which the block_height <= block_height_max',
+                            required: false,
+                            schema: {type: 'string'}
+                        },
+                        // ...greylistFilterParameters,
+                        ...primaryBoundaryParameters,
+                        ...dateBoundaryParameters,
+                        ...paginationParameters,
+                        // 排序参数
+                        {
+                            name: 'sort',
+                            in: 'query',
+                            description: 'Column to sort',
+                            required: false,
+                            schema: {
+                                type: 'string',
+                                enum: ['created'],
+                                default: 'created'
+                            }
+                        }
+                    ],
+                    // 通过code码返回对应的responses信息
+                    responses: getOpenAPI3Responses([200, 500], {type: 'array', items: {'$ref': '#/components/schemas/Transfers'}})
+                }
+            },
+        },
+        definitions: {}
+    };
 }
