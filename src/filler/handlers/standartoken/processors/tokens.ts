@@ -22,6 +22,7 @@ export function tokenProcessor(core: StandarTokenHandler, processor: DataProcess
                 token = splitEosioAsset(delta.value.balance);
             } catch (error) {
                 logger.warn("contract " + delta.code + " is not standar token contract")
+                return
             }
 
             if (token && delta.present) {
@@ -59,6 +60,7 @@ export function tokenProcessor(core: StandarTokenHandler, processor: DataProcess
                 supply = splitEosioAsset(delta.value.supply);
             } catch (error) {
                 logger.warn("contract " + delta.code + " is not standar token contract")
+                return
             }
 
             if (max_supply && supply && delta.present) {
@@ -85,6 +87,9 @@ export function tokenProcessor(core: StandarTokenHandler, processor: DataProcess
         contract, 'transfer',
         async (db: ContractDBTransaction, block: ShipBlock, tx: EosioTransaction, trace: EosioActionTrace<LogTransferActionData>): Promise<void> => {
             if (core.args.store_transfers) {
+                if (trace.act.data.from == null || trace.act.data.to == null || trace.act.data.quantity == null) {
+                    return
+                }
 
                 // balance maybe not valid asset
                 var token = null
@@ -92,6 +97,7 @@ export function tokenProcessor(core: StandarTokenHandler, processor: DataProcess
                     token = splitEosioAsset(trace.act.data.quantity);
                 } catch (error) {
                     logger.warn("contract " + trace.act.account + " is not standar token contract")
+                    return
                 }
 
                 if (token) {
@@ -123,6 +129,7 @@ export function tokenProcessor(core: StandarTokenHandler, processor: DataProcess
                     token = splitEosioAsset(trace.act.data.quantity);
                 } catch (error) {
                     logger.warn("contract " + trace.act.account + " is not standar token contract")
+                    return
                 }
 
                 if (token) {
