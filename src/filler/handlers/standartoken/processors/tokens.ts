@@ -21,10 +21,11 @@ export function tokenProcessor(core: StandarTokenHandler, processor: DataProcess
             try {
                 token = splitEosioAsset(delta.value.balance);
             } catch (error) {
-                logger.warn("contract " + delta.code + " is not standar token contract")
+                logger.warn("accounts: " + "contract " + delta.code + " is not standar token contract")
+                return
             }
 
-            if (token && delta.present) {
+            if (token && token.token_symbol && token.amount && delta.present) {
                 await db.delete('standartoken_balances', {
                     str: 'contract = $1 AND owner = $2',
                     values: [delta.code, delta.scope]
@@ -50,7 +51,8 @@ export function tokenProcessor(core: StandarTokenHandler, processor: DataProcess
             try {
                 max_supply = splitEosioAsset(delta.value.max_supply);
             } catch (error) {
-                logger.warn("contract " + delta.code + " is not standar token contract")
+                logger.warn("stat: " + "contract " + delta.code + " is not standar token contract")
+                return
             }
 
             // supply may be 0 when create
@@ -58,10 +60,11 @@ export function tokenProcessor(core: StandarTokenHandler, processor: DataProcess
             try {
                 supply = splitEosioAsset(delta.value.supply);
             } catch (error) {
-                logger.warn("contract " + delta.code + " is not standar token contract")
+                logger.warn("stat2: " + "contract " + delta.code + " is not standar token contract")
+                return
             }
 
-            if (max_supply && supply && delta.present) {
+            if (max_supply && max_supply.amount && max_supply.token_symbol && max_supply.token_precision && supply && supply.amount && delta.present) {
                 await db.delete('standartoken_stats', {
                     str: 'contract = $1 AND token_symbol = $2',
                     values: [delta.code, max_supply.token_symbol]
@@ -85,16 +88,20 @@ export function tokenProcessor(core: StandarTokenHandler, processor: DataProcess
         contract, 'transfer',
         async (db: ContractDBTransaction, block: ShipBlock, tx: EosioTransaction, trace: EosioActionTrace<LogTransferActionData>): Promise<void> => {
             if (core.args.store_transfers) {
+                if (trace.act.data.from == null || trace.act.data.to == null || trace.act.data.quantity == null) {
+                    return
+                }
 
                 // balance maybe not valid asset
                 var token = null
                 try {
                     token = splitEosioAsset(trace.act.data.quantity);
                 } catch (error) {
-                    logger.warn("contract " + trace.act.account + " is not standar token contract")
+                    logger.warn("transfer: " + "contract " + trace.act.account + " is not standar token contract")
+                    return
                 }
 
-                if (token) {
+                if (token && token.amount && token.token_symbol) {
                     await db.insert('standartoken_transfers', {
                         contract: trace.act.account,
                         transfer_id: trace.global_sequence,
@@ -122,10 +129,11 @@ export function tokenProcessor(core: StandarTokenHandler, processor: DataProcess
                 try {
                     token = splitEosioAsset(trace.act.data.quantity);
                 } catch (error) {
-                    logger.warn("contract " + trace.act.account + " is not standar token contract")
+                    logger.warn("retire: " + "contract " + trace.act.account + " is not standar token contract")
+                    return
                 }
 
-                if (token) {
+                if (token && token.amount && token.token_symbol) {
                     await db.insert('standartoken_retired', {
                         contract: trace.act.account,
                         transfer_id: trace.global_sequence,
