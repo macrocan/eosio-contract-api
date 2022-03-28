@@ -31,14 +31,14 @@ export function transfersEndpoints(core: StandarTokenNamespace, server: HTTPServ
                     summary: 'Fetch transfers',
                     parameters: [
                         {
-                            name: 'senders',
+                            name: 'sender',
                             in: 'query',
                             description: 'Get transfers by from',
                             required: false,
                             schema: { type: 'string' }
                         },
                         {
-                            name: 'receivers',
+                            name: 'receiver',
                             in: 'query',
                             description: 'Get transfers by to',
                             required: false,
@@ -49,20 +49,43 @@ export function transfersEndpoints(core: StandarTokenNamespace, server: HTTPServ
                             in: 'query',
                             description: 'Filter for transfers which the block_height >= block_height_min',
                             required: false,
-                            schema: {type: 'string'}
+                            schema: {type: 'string',min: 1}
                         },
                         {
                             name: 'block_height_max',
                             in: 'query',
                             description: 'Filter for transfers which the block_height <= block_height_max',
                             required: false,
-                            schema: {type: 'string'}
+                            schema: {type: 'string',min: 1}
+                        },
+                        {
+                          name: 'contract',
+                          in: 'query',
+                          description: 'Get transfers by contract',
+                          required: false,
+                        },
+                        {
+                            name: 'symbol',
+                            in: 'query',
+                            description: 'Get transfers by symbol',
+                            required: false,
                         },
                         // ...greylistFilterParameters,
-                        ...primaryBoundaryParameters,
-                        ...dateBoundaryParameters,
-                        ...paginationParameters,
+                        // ...primaryBoundaryParameters,
+                        // ...dateBoundaryParameters,
+                        // ...paginationParameters,
                         // 排序参数
+                        {
+                          name: 'order',
+                          in: 'query',
+                          description: 'Column to order',
+                          required: false,
+                          schema: {
+                              type: 'string',
+                              enum: ['asc', 'desc'],
+                              default: 'desc'
+                          }
+                        },
                         {
                             name: 'sort',
                             in: 'query',
@@ -70,13 +93,13 @@ export function transfersEndpoints(core: StandarTokenNamespace, server: HTTPServ
                             required: false,
                             schema: {
                                 type: 'string',
-                                enum: ['created'],
+                                enum: ['created', 'amount', 'block'],
                                 default: 'created'
                             }
                         }
                     ],
                     // 通过code码返回对应的responses信息
-                    responses: getOpenAPI3Responses([200, 500], {type: 'array', items: {'$ref': '#/components/schemas/Transfers'}})
+                    responses: getOpenAPI3Responses([200, 500], { type: 'array', items: {'$ref': '#/components/schemas/Transfer'}})
                 }
             },
         },

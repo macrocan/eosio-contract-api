@@ -8,7 +8,6 @@ import { applyActionGreylistFilters, getContractActionLogs } from '../../../util
 import { filterQueryArgs } from '../../validation';
 
 export async function getCollectionsAction(params: RequestValues, ctx: AtomicAssetsContext): Promise<any> {
-    console.log('进入getCollectionsAction==========');
     const maxLimit = ctx.coreArgs.limits?.collections || 100;
     const args = filterQueryArgs(params, {
         page: {type: 'int', min: 1, default: 1},

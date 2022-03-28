@@ -2,6 +2,7 @@ import { RequestValues } from '../../utils';
 import { StandarTokenContext } from "../index";
 import { filterQueryArgs } from '../../validation';
 import QueryBuilder from '../../../builder';
+import logger from '../../../../utils/winston';
 
 export async function getTransfersAction(params: RequestValues, ctx: StandarTokenContext): Promise<any> {
   // const maxLimit = ctx.coreArgs.limits?.transfers || 100;
@@ -21,6 +22,7 @@ export async function getTransfersAction(params: RequestValues, ctx: StandarToke
   });
 
   const query = new QueryBuilder('SELECT created_at_time,token_symbol, amount, created_at_block FROM standartoken_transfers');
+
   if (args.sender) {
     query.equal('"from"', args.sender)
   }
@@ -54,7 +56,13 @@ export async function getTransfersAction(params: RequestValues, ctx: StandarToke
     query.paginate(args.page, args.size);
   }
   const collectionResult = await ctx.db.query(query.buildString(), query.buildValues());
+  // const countQuery = await ctx.db.query(
+  //   'SELECT COUNT(*) counter FROM (' + query.buildString() + ') x',
+  //   query.buildValues()
+  // );
+  // logger.info('res', countQuery);
 
+  // return countQuery.rows[0].counter;
   const list = collectionResult.rows.map(row => row);
 
   return {

@@ -42,6 +42,22 @@ export class StandarTokenNamespace extends ApiNamespace {
         const endpointsDocs: any[] = [];
 
         endpointsDocs.push(transfersEndpoints(this, server, router));
+        // creat api doc
+        for (const doc of endpointsDocs) {
+          if (doc.tag) {
+              server.docs.addTags([doc.tag]);
+          }
+
+          if (doc.paths) {
+              const paths: any = {};
+
+              for (const path of Object.keys(doc.paths)) {
+                  paths[this.path + path] = doc.paths[path];
+              }
+
+              server.docs.addPaths(paths);
+          }
+        }
 
         router.all(['/docs', '/docs/swagger'], (req, res) => res.redirect('/docs'));
         return router

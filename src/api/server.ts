@@ -356,7 +356,7 @@ export class DocumentationServer {
                 title: 'EOSIO Contract API'
             },
             servers: [
-                {url: 'https://' + server.config.server_name},
+                // {url: 'https://' + server.config.server_name},
                 {url: 'http://' + server.config.server_name}
             ],
             tags: [],
