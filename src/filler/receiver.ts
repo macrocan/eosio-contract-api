@@ -443,10 +443,8 @@ export default class StateReceiver {
     ): Promise<Array<{trace: EosioActionTrace<ContractDataEstimation>, tx: EosioTransaction<ContractDataEstimation>}>> {
         const traces = extractShipTraces(data);
         var failedIndexs = [];
-        var len = traces.length;
 
-        for (var i = 0; i < len; i++) {
-            const row = traces[i];
+        for (const [index, row] of traces.entries()) {
             const act = row.trace.act;
 
             act.data = <any>{
@@ -471,48 +469,18 @@ export default class StateReceiver {
                     };
                 } catch (e) {
                     // record index which failed to deserialize
-                    failedIndexs.push(i)
+                    failedIndexs.push(index);
                     logger.warn('Failed to deserialize trace ' + act.account + ':' + act.name + ' in preprocessing', e);
                 }
             }
         }
 
-        // filter delta which failed to deserialize
-        for (var j = 0; j < failedIndexs.length; j++) {
-            const index = failedIndexs[i] - j;
-            // const act = traces[index].trace.act;
-            // logger.warn('filter trace which failed to deserialize:' + act.account + ':' + act.name);
-            traces.splice(index, 1);
+        // filter trace which failed to deserialize
+        for (const [i, index] of failedIndexs.entries()) {
+            const act = traces[index-i].trace.act;
+            logger.warn('Failed to deserialize trace ' + act.account + ':' + act.name + ', filter it');
+            traces.splice(index-i, 1);           
         }
-
-        // for (const row of traces) {
-        //     const act = row.trace.act;
-
-        //     act.data = <any>{
-        //         binary: act.data,
-        //         block_num: null,
-        //         json: null
-        //     };
-
-        //     const processingInfo = this.processor.actionTraceNeeded(act.account, act.name);
-
-        //     if (processingInfo.deserialize && this.modules.checkRawTrace(blockNum, row.tx, row.trace)) {
-        //         try {
-        //             const abi = await this.fetchContractAbi(act.account, blockNum);
-        //             const type = getActionAbiType(abi.json, act.account, act.name);
-
-        //             act.data = <any>{
-        //                 // @ts-ignore
-        //                 binary: act.data.binary,
-        //                 // @ts-ignore
-        //                 json: deserializeEosioType(type, act.data.binary, abi.types, false),
-        //                 block_num: abi.block_num
-        //             };
-        //         } catch (e) {
-        //             logger.warn('Failed to deserialize trace ' + act.account + ':' + act.name + ' in preprocessing', e);
-        //         }
-        //     }
-        // }
 
         return traces;
     }
@@ -520,10 +488,8 @@ export default class StateReceiver {
     private async prepareContractRows(blockNum: number, data: ShipTableDelta[]): Promise<EosioContractRow<ContractDataEstimation>[]> {
         const deltas = extractShipContractRows(data);
         var failedIndexs = [];
-        var len = deltas.length;
 
-        for (var i = 0; i < len; i++) {
-            const delta = deltas[i];
+        for (const [index, delta] of deltas.entries()) {
             delta.value = <any>{
                 binary: delta.value,
                 block_num: null,
@@ -546,46 +512,18 @@ export default class StateReceiver {
                     };
                 } catch (e) {
                     // record index which failed to deserialize
-                    failedIndexs.push(i)
+                    failedIndexs.push(index);
                     logger.warn('Failed to deserialize table ' + delta.code + ':' + delta.table + ' in preprocessing', e);
                 }
             }
         }
 
         // filter delta which failed to deserialize
-        for (var j = 0; j < failedIndexs.length; j++) {
-            const index = failedIndexs[i] - j;
-            // const delta = deltas[index]
-            // logger.warn('filter delta which failed to deserialize:' + delta.code + ':' + delta.table);
-            deltas.splice(index, 1);
+        for (const [i, index] of failedIndexs.entries()) {
+            const delta = deltas[index-i]
+            logger.warn('Failed to deserialize table ' + delta.code + ':' + delta.table + ', filter it');
+            deltas.splice(index-i, 1);
         }
-
-        // for (const delta of deltas) {
-        //     delta.value = <any>{
-        //         binary: delta.value,
-        //         block_num: null,
-        //         json: null
-        //     };
-
-        //     const processingInfo = this.processor.contractRowNeeded(delta.code, delta.table);
-
-        //     if (processingInfo.deserialize && this.modules.checkRawDelta(blockNum, delta)) {
-        //         try {
-        //             const abi = await this.fetchContractAbi(delta.code, blockNum);
-        //             const type = getTableAbiType(abi.json, delta.code, delta.table);
-
-        //             delta.value = <any>{
-        //                 // @ts-ignore
-        //                 binary: delta.value.binary,
-        //                 // @ts-ignore
-        //                 json: deserializeEosioType(type, delta.value.binary, abi.types),
-        //                 block_num: abi.block_num
-        //             };
-        //         } catch (e) {
-        //             logger.warn('Failed to deserialize table ' + delta.code + ':' + delta.table + ' in preprocessing', e);
-        //         }
-        //     }
-        // }
 
         return deltas;
     }
