@@ -480,8 +480,8 @@ export default class StateReceiver {
         // filter delta which failed to deserialize
         for (var j = 0; j < failedIndexs.length; j++) {
             const index = failedIndexs[i] - j;
-            const act = traces[index].trace.act;
-            logger.warn('filter trace which failed to deserialize:' + act.account + ':' + act.name);
+            // const act = traces[index].trace.act;
+            // logger.warn('filter trace which failed to deserialize:' + act.account + ':' + act.name);
             traces.splice(index, 1);
         }
 
@@ -555,8 +555,8 @@ export default class StateReceiver {
         // filter delta which failed to deserialize
         for (var j = 0; j < failedIndexs.length; j++) {
             const index = failedIndexs[i] - j;
-            const delta = deltas[index]
-            logger.warn('filter delta which failed to deserialize:' + delta.code + ':' + delta.table);
+            // const delta = deltas[index]
+            // logger.warn('filter delta which failed to deserialize:' + delta.code + ':' + delta.table);
             deltas.splice(index, 1);
         }
 
