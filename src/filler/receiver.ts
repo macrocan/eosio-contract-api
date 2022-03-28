@@ -442,8 +442,9 @@ export default class StateReceiver {
         blockNum: number, data: ShipTransactionTrace[]
     ): Promise<Array<{trace: EosioActionTrace<ContractDataEstimation>, tx: EosioTransaction<ContractDataEstimation>}>> {
         const traces = extractShipTraces(data);
+        var failedIndexs = [];
 
-        for (const row of traces) {
+        for (const [index, row] of traces.entries()) {
             const act = row.trace.act;
 
             act.data = <any>{
@@ -467,9 +468,18 @@ export default class StateReceiver {
                         block_num: abi.block_num
                     };
                 } catch (e) {
+                    // record index which failed to deserialize
+                    failedIndexs.push(index);
                     logger.warn('Failed to deserialize trace ' + act.account + ':' + act.name + ' in preprocessing', e);
                 }
             }
+        }
+
+        // filter trace which failed to deserialize
+        for (const [i, index] of failedIndexs.entries()) {
+            const act = traces[index-i].trace.act;
+            logger.warn('Failed to deserialize trace ' + act.account + ':' + act.name + ', filter it');
+            traces.splice(index-i, 1);           
         }
 
         return traces;
@@ -477,8 +487,9 @@ export default class StateReceiver {
 
     private async prepareContractRows(blockNum: number, data: ShipTableDelta[]): Promise<EosioContractRow<ContractDataEstimation>[]> {
         const deltas = extractShipContractRows(data);
+        var failedIndexs = [];
 
-        for (const delta of deltas) {
+        for (const [index, delta] of deltas.entries()) {
             delta.value = <any>{
                 binary: delta.value,
                 block_num: null,
@@ -500,9 +511,18 @@ export default class StateReceiver {
                         block_num: abi.block_num
                     };
                 } catch (e) {
+                    // record index which failed to deserialize
+                    failedIndexs.push(index);
                     logger.warn('Failed to deserialize table ' + delta.code + ':' + delta.table + ' in preprocessing', e);
                 }
             }
+        }
+
+        // filter delta which failed to deserialize
+        for (const [i, index] of failedIndexs.entries()) {
+            const delta = deltas[index-i]
+            logger.warn('Failed to deserialize table ' + delta.code + ':' + delta.table + ', filter it');
+            deltas.splice(index-i, 1);
         }
 
         return deltas;
