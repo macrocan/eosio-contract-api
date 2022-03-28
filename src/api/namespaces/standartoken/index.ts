@@ -43,7 +43,7 @@ export class StandarTokenNamespace extends ApiNamespace {
 
         endpointsDocs.push(transfersEndpoints(this, server, router));
 
-
+        router.all(['/docs', '/docs/swagger'], (req, res) => res.redirect('/docs'));
         return router
     }
 
