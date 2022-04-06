@@ -21,7 +21,7 @@ export function tokenProcessor(core: StandarTokenHandler, processor: DataProcess
             try {
                 token = splitEosioAsset(delta.value.balance);
             } catch (error) {
-                logger.warn("accounts: " + "contract " + delta.code + " is not standar token contract")
+                logger.debug("accounts: " + "contract " + delta.code + " is not standar token contract")
                 return
             }
 
@@ -51,7 +51,7 @@ export function tokenProcessor(core: StandarTokenHandler, processor: DataProcess
             try {
                 max_supply = splitEosioAsset(delta.value.max_supply);
             } catch (error) {
-                logger.warn("stat: " + "contract " + delta.code + " is not standar token contract")
+                logger.debug("stat: " + "contract " + delta.code + " is not standar token contract")
                 return
             }
 
@@ -60,7 +60,7 @@ export function tokenProcessor(core: StandarTokenHandler, processor: DataProcess
             try {
                 supply = splitEosioAsset(delta.value.supply);
             } catch (error) {
-                logger.warn("stat2: " + "contract " + delta.code + " is not standar token contract")
+                logger.debug("stat2: " + "contract " + delta.code + " is not standar token contract")
                 return
             }
 
@@ -97,7 +97,7 @@ export function tokenProcessor(core: StandarTokenHandler, processor: DataProcess
                 try {
                     token = splitEosioAsset(trace.act.data.quantity);
                 } catch (error) {
-                    logger.warn("transfer: " + "contract " + trace.act.account + " is not standar token contract")
+                    logger.debug("transfer: " + "contract " + trace.act.account + " is not standar token contract")
                     return
                 }
 
@@ -129,7 +129,7 @@ export function tokenProcessor(core: StandarTokenHandler, processor: DataProcess
                 try {
                     token = splitEosioAsset(trace.act.data.quantity);
                 } catch (error) {
-                    logger.warn("retire: " + "contract " + trace.act.account + " is not standar token contract")
+                    logger.debug("retire: " + "contract " + trace.act.account + " is not standar token contract")
                     return
                 }
 
